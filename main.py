@@ -31,20 +31,20 @@ def getinputjson(x,typeinput):
     
 @st.cache()
 def getdatalotes():
-    datageometry    = gpd.read_file(r'D:\Dropbox\Empresa\Consultoria Data\SEBASTIAN GARCIA\LOTES\PILOTO 1\data\app_lotesgeometry')
-    datalotes       = pd.read_pickle(r'D:\Dropbox\Empresa\Consultoria Data\SEBASTIAN GARCIA\LOTES\PILOTO 1\data\app_datalotes')
+    datageometry    = gpd.read_file('data/app_lotesgeometry')
+    datalotes       = pd.read_pickle('data/app_datalotes')
     datalotes       = datalotes.sort_values(by='indicador',ascending=False)
     datalotes['id'] = range(len(datalotes))
-    barriocatastral = gpd.read_file(r'D:\Dropbox\Empresa\Consultoria Data\SEBASTIAN GARCIA\LOTES\PILOTO 1\data\barriocatastralfiltrado',encoding = 'utf-8')
+    barriocatastral = gpd.read_file('data/barriocatastralfiltrado',encoding = 'utf-8')
     return datageometry,datalotes,barriocatastral
 
 @st.cache(allow_output_mutation=True)
 def getinfolote(barmanpre):
-    datachips        = pd.read_pickle(r'D:\Dropbox\Empresa\Consultoria Data\SEBASTIAN GARCIA\LOTES\PILOTO 1\data\app_datachips')
+    datachips        = pd.read_pickle('data/app_datachips')
     datachips        = datachips[datachips['barmanpre']==barmanpre]
     datapropietarios = pd.DataFrame()
     if datachips.empty is False:
-        datapropietarios = pd.read_pickle(r'D:\Dropbox\Empresa\Consultoria Data\SEBASTIAN GARCIA\LOTES\PILOTO 1\data\app_datapropietarios')
+        datapropietarios = pd.read_pickle('data/app_datapropietarios')
         datapropietarios = datapropietarios[datapropietarios['chip'].isin(datachips['prechip'])]
     return datachips,datapropietarios
 

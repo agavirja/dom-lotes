@@ -10,12 +10,13 @@ import plotly.express as px
 import copy
 import pandas as pd
 import geopandas as gpd
+import fiona
 from shapely.geometry import Point
 from bs4 import BeautifulSoup
 
 from html_scripts import table2,boxkpi
 # streamlit run D:\Dropbox\Empresa\stramlitAPP\lotes\main.py
-# pipreqs --encoding utf-8 "D:\Dropbox\Empresa\stramlitAPP\lotes"
+# pipreqs --encoding utf-8 "D:\Dropbox\Empresa\stramlitAPP\lotes\online"
 
 st.set_page_config(layout="wide",initial_sidebar_state="expanded")
 
@@ -31,11 +32,17 @@ def getinputjson(x,typeinput):
     
 @st.cache()
 def getdatalotes():
-    datageometry    = gpd.read_file('data/app_lotesgeometry')
+    datageometry     = gpd.read_file('data/app_lotesgeometry')
+    datageometry.crs = 'EPSG:4326'
+    datageometry     = datageometry.to_crs('EPSG:4326')
+    
     datalotes       = pd.read_pickle('data/app_datalotes')
     datalotes       = datalotes.sort_values(by='indicador',ascending=False)
     datalotes['id'] = range(len(datalotes))
-    barriocatastral = gpd.read_file('data/barriocatastralfiltrado',encoding = 'utf-8')
+    
+    barriocatastral     = gpd.read_file('data/barriocatastralfiltrado',encoding = 'utf-8')
+    barriocatastral.crs = 'EPSG:4326'
+    barriocatastral     = barriocatastral.to_crs('EPSG:4326')
     return datageometry,datalotes,barriocatastral
 
 @st.cache(allow_output_mutation=True)

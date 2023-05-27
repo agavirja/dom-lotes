@@ -3,21 +3,29 @@ import folium
 from streamlit_folium import st_folium
 from folium.plugins import Draw
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
-import altair as alt
 import plotly.graph_objects as go
 import plotly.express as px
 
-import copy
 import pandas as pd
-import geopandas as gpd
 from shapely.geometry import Point
 from bs4 import BeautifulSoup
 
 from html_scripts import table2,boxkpi
-# streamlit run D:\Dropbox\Empresa\stramlitAPP\lotes\main.py
+
+from shapely import wkt
+from sqlalchemy import create_engine 
+from shapely.geometry import mapping
+
+# streamlit run D:\Dropbox\Empresa\stramlitAPP\lotes\online\main.py
 # pipreqs --encoding utf-8 "D:\Dropbox\Empresa\stramlitAPP\lotes\online"
 
 st.set_page_config(layout="wide",initial_sidebar_state="expanded")
+
+user     = st.secrets["user"]
+password = st.secrets["password"]
+host     = st.secrets["host"]
+schema   = st.secrets["schema"]
+engine   = create_engine(f'mysql+mysqlconnector://{user}:{password}@{host}/{schema}')
 
 def getinput(x,pos,typeinput):
     try:
@@ -29,23 +37,50 @@ def getinputjson(x,typeinput):
         return x[typeinput]
     except: return None
     
-
-def getdatalotes():
+def data2geojson(data,variables):
+    geojson = {
+    'type': 'FeatureCollection',
+    'features': []
+    }
     
+    for _, row in data.iterrows():
+        # Crea una feature (característica) para cada fila del DataFrame
+        feature = {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': mapping(wkt.loads(row['geometry']))
+        }
+        # Agrega las propiedades de la característica
+        for prop in variables:
+            feature['properties'][prop] = row[prop]
+        # Agrega la característica a la lista de características
+        geojson['features'].append(feature)
+        
+    return geojson
+
+@st.experimental_memo
+def getpolygon():
+    
+    #datalotes       = pd.read_pickle('data/app_datalotes')
+    #datalotes       = datalotes.sort_values(by='indicador',ascending=False)
+    #datalotes['id'] = range(len(datalotes))
+
     datalotes       = pd.read_pickle('data/app_datalotes')
     datalotes       = datalotes.sort_values(by='indicador',ascending=False)
     datalotes['id'] = range(len(datalotes))
     
-    datageometry     = gpd.read_file(r'data/app_lotesgeometry.shp')
-    #datageometry.crs = 'EPSG:4326'
-    #datageometry     = datageometry.to_crs('EPSG:4326')
-
-    barriocatastral     = gpd.read_file(r'data/barriocatastralfiltrado.shp')
-    #barriocatastral.crs = 'EPSG:4326'
-    #barriocatastral     = barriocatastral.to_crs('EPSG:4326')
+    data         = pd.read_sql_query("""SELECT code,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_lotes_piloto1"""  , engine)
+    variables    = ['code']
+    datageometry = data2geojson(data,variables)
+    
+    consulta        = '"'+'","'.join(datalotes['scacodigo'].unique())+'"'
+    data            = pd.read_sql_query(f"""SELECT scacodigo,scanombre,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_barrios_piloto1 WHERE scacodigo IN ({consulta})"""  , engine)
+    variables       = ['scacodigo', 'scanombre']
+    barriocatastral = data2geojson(data,variables)
+    
     return datageometry,datalotes,barriocatastral
 
-
+@st.experimental_memo
 def getinfolote(barmanpre):
     datachips        = pd.read_pickle('data/app_datachips')
     datachips        = datachips[datachips['barmanpre']==barmanpre]
@@ -55,14 +90,13 @@ def getinfolote(barmanpre):
         datapropietarios = datapropietarios[datapropietarios['chip'].isin(datachips['prechip'])]
     return datachips,datapropietarios
 
+datageometry,datalotes,barriocatastral = getpolygon()
 
-
-datageometry,datalotes,barriocatastral = getdatalotes()
 datalotesmap   = datalotes.copy()
 datalotestudio = pd.DataFrame()
 
-lng = datageometry['geometry'].centroid.x.median()
-lat = datageometry['geometry'].centroid.y.median()
+lng = -74.054575
+lat =  4.693925
 latpoint = None
 lngpoint = None
 
@@ -95,33 +129,12 @@ with col1:
     html  = boxkpi(len(datalotesmap),label)
     html_struct = BeautifulSoup(html, 'html.parser')
     st.markdown(html_struct, unsafe_allow_html=True)
-                
+    
 with col2:
     map0  = folium.Map(location=[lat,lng], zoom_start=13,tiles="CartoDB dark_matter")
     
-    folium.Choropleth(
-        geo_data=barriocatastral,
-        name='Choropleth',
-        data=datalotesmap,
-        columns=['scacodigo','lotesxbarrio'],
-        key_on='feature.properties.scacodigo',
-        fill_color='YlGn',
-        fill_opacity=0.15,
-        line_opacity=0.1,
-        nan_fill_opacity=0.05,
-    ).add_to(map0)
-    
-    folium.Choropleth(
-        geo_data=datageometry,
-        name='Choropleth',
-        data=datalotesmap,
-        columns=['code','indicador'],
-        key_on='feature.properties.code',
-        fill_color='GnBu',
-        fill_opacity=1,
-        line_opacity=0.1,
-        nan_fill_opacity=0.1,
-    ).add_to(map0)
+    folium.GeoJson(datageometry).add_to(map0)
+    folium.GeoJson(barriocatastral).add_to(map0)
     
     draw = Draw(
                 draw_options={"polygon":False,"polyline": False,"marker": True,"circlemarker":False,"rectangle":False,"circle":False},
@@ -357,13 +370,3 @@ if datalotestudio.empty is False:
             w.columns = ['propietario ' + str(i+1) for i in range(w.shape[1])]
             w = w.reset_index()
             st.dataframe(w)
-            
-    #indPago
-
-
-    # barmanpre: 009118025007 caso de estudio por la cantidad de data en datapropietarios
-        
-    #st.dataframe(datalotestudio)
-    #st.dataframe(datachips)
-    #st.dataframe(datapropietarios)
-        

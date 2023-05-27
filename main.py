@@ -34,17 +34,23 @@ engine   = create_engine(f'mysql+mysqlconnector://{user}:{password}@{host}/{sche
 
 @st.experimental_memo
 def getpolygon():
-    data   = pd.read_sql_query("""SELECT scacodigo,scanombre,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_barrios_piloto1"""  , engine)
-    data['geometry'] = data['geometry'].apply(wkt.loads)
-    #data['geometry'] = data['geometry'].apply(lambda x: wkt.loads(x))
-    data     = gpd.GeoDataFrame(data, geometry='geometry',crs="EPSG:4326")
+    #data   = pd.read_sql_query("""SELECT scacodigo,scanombre,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_barrios_piloto1"""  , engine)
+    #data['geometry'] = data['geometry'].apply(wkt.loads)
+    #data     = gpd.GeoDataFrame(data, geometry='geometry',crs="EPSG:4326")
     #data.crs = "EPSG:4326"
     #data     = data.to_crs("EPSG:4326")
+    barrios = pd.read_sql_query("""SELECT codigo,ST_AsText(geometry) as geometry FROM appraisal.barrios WHERE pais='colombia'"""  , engine)
+    barrios = barrios.drop_duplicates(subset='codigo',keep='first')
+    barrios["geometry"] = barrios["geometry"].apply(lambda x: wkt.loads(x))
+    barrios             =  gpd.GeoDataFrame(barrios, geometry='geometry')
+    barrios.crs = 'EPSG:4326'
+    barrios     = barrios.to_crs('EPSG:4326')
     
-    datas = data[['scacodigo']]
-    datas['value'] = data['scacodigo'].apply(lambda x: random.uniform(0,100))
     
-    return data,datas
+    datas = barrios[['codigo']]
+    datas['value'] = datas['codigo'].apply(lambda x: random.uniform(0,100))
+    
+    return barrios,datas
 
 data,datas = getpolygon()
 

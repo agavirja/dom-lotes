@@ -14,30 +14,27 @@ from shapely.geometry import Point
 from bs4 import BeautifulSoup
 
 from html_scripts import table2,boxkpi
+
+from shapely import wkt
+from sqlalchemy import create_engine 
+
 # streamlit run D:\Dropbox\Empresa\stramlitAPP\lotes\main.py
 # pipreqs --encoding utf-8 "D:\Dropbox\Empresa\stramlitAPP\lotes\online"
 
 st.set_page_config(layout="wide",initial_sidebar_state="expanded")
 
-def getinput(x,pos,typeinput):
-    try:
-        return str(x[pos][typeinput])
-    except: return None
-   
-def getinputjson(x,typeinput):
-    try:
-        return x[typeinput]
-    except: return None
-    
+user     = st.secrets["user"]
+password = st.secrets["password"]
+host     = st.secrets["host"]
+schema   = st.secrets["schema"]
+engine   = create_engine(f'mysql+mysqlconnector://{user}:{password}@{host}/{schema}')
 
-def getdatalotes():
-    datalotes       = pd.read_pickle('data/app_datalotes')
-    datalotes       = datalotes.sort_values(by='indicador',ascending=False)
-    datalotes['id'] = range(len(datalotes))
-    return datalotes
+@st.experimental_memo
+def getpolygon():
+    data   = pd.read_sql_query("""SELECT ST_AsText(geometry) as wkt FROM lotes.dom_geometry_barrios_piloto1"""  , engine)
+    data['wkt'] = data['wkt'].apply(lambda x: wkt.loads(x))
+    return data
 
 
-
-datalotes = getdatalotes()
-st.dataframe(datalotes)
-        
+data = getpolygon()
+st.dataframe(data)

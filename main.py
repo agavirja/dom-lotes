@@ -29,7 +29,7 @@ def getinputjson(x,typeinput):
         return x[typeinput]
     except: return None
     
-@st.cache()
+
 def getdatalotes():
     
     datalotes       = pd.read_pickle('data/app_datalotes')
@@ -45,7 +45,7 @@ def getdatalotes():
     barriocatastral     = barriocatastral.to_crs('EPSG:4326')
     return datageometry,datalotes,barriocatastral
 
-@st.cache(allow_output_mutation=True)
+
 def getinfolote(barmanpre):
     datachips        = pd.read_pickle('data/app_datachips')
     datachips        = datachips[datachips['barmanpre']==barmanpre]

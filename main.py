@@ -34,42 +34,30 @@ engine   = create_engine(f'mysql+mysqlconnector://{user}:{password}@{host}/{sche
 
 @st.experimental_memo
 def getpolygon():
-    #data   = pd.read_sql_query("""SELECT scacodigo,scanombre,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_barrios_piloto1"""  , engine)
-    #data['geometry'] = data['geometry'].apply(wkt.loads)
-    #data     = gpd.GeoDataFrame(data, geometry='geometry',crs="EPSG:4326")
-    #data.crs = "EPSG:4326"
-    #data     = data.to_crs("EPSG:4326")
-    barrios = pd.read_sql_query("""SELECT codigo,ST_AsText(geometry) as geometry FROM appraisal.barrios WHERE pais='colombia'"""  , engine)
-    barrios = barrios.drop_duplicates(subset='codigo',keep='first')
-    barrios["geometry"] = barrios["geometry"].apply(lambda x: wkt.loads(x))
-    barrios             =  gpd.GeoDataFrame(barrios, geometry='geometry')
-    barrios.crs = 'EPSG:4326'
-    barrios     = barrios.to_crs('EPSG:4326')
+    data   = pd.read_sql_query("""SELECT scacodigo,scanombre,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_barrios_piloto1"""  , engine)
+    geojson = {
+    'type': 'FeatureCollection',
+    'features': []
+    }
     
-    
-    datas = barrios[['codigo']]
-    datas['value'] = datas['codigo'].apply(lambda x: random.uniform(0,100))
-    
-    return barrios,datas
+    for _, row in data.iterrows():
+        # Crea una feature (característica) para cada fila del DataFrame
+        feature = {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': mapping(wkt.loads(row['geometry']))
+        }
+        # Agrega las propiedades de la característica
+        for prop in ['scacodigo', 'scanombre']:
+            feature['properties'][prop] = row[prop]
+        # Agrega la característica a la lista de características
+        geojson['features'].append(feature)
+        
+    return geojson
 
-data,datas = getpolygon()
-
-#st.write(data)
-
-map0  = folium.Map(location=[4.693925, -74.054575], zoom_start=13,tiles="CartoDB dark_matter")
-
-folium.Choropleth(
-    geo_data=data,
-    name='Choropleth',
-    data=datas,
-    columns=['scacodigo','value'],
-    key_on='feature.properties.scacodigo',
-    fill_color='YlGn',
-    fill_opacity=0.15,
-    line_opacity=0.1,
-    nan_fill_opacity=0.05,
-).add_to(map0)
-
-st_map = st_folium(map0,width=1500, height=800)      
+data = getpolygon()
 
 
+m   = folium.Map(location=[4.693925, -74.054575], zoom_start=15,tiles="cartodbpositron")
+folium.GeoJson(data).add_to(m)
+st_map = st_folium(m,width=800,height=450)

@@ -37,7 +37,7 @@ def getpolygon():
     data   = pd.read_sql_query("""SELECT scacodigo,scanombre,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_barrios_piloto1"""  , engine)
     data['geometry'] = data['geometry'].apply(wkt.loads)
     #data['geometry'] = data['geometry'].apply(lambda x: wkt.loads(x))
-    #data     = gpd.GeoDataFrame(data, geometry='geometry')
+    data     = gpd.GeoDataFrame(data, geometry='geometry')
     #data.crs = "EPSG:4326"
     #data     = data.to_crs("EPSG:4326")
     

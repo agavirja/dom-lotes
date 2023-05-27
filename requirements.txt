@@ -8,3 +8,4 @@ Shapely==1.7.1
 streamlit==1.14.0
 streamlit_folium==0.6.15
 streamlit_aggrid==0.3.3
+fiona==1.8.20

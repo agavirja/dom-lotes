@@ -107,7 +107,9 @@ with col1:
     areaterreno  = st.slider('Area de terreno',300, 400, (300, 400))
     datalotesmap = datalotesmap[(datalotesmap['areaterreno']>=areaterreno[0]) & (datalotesmap['areaterreno']<=areaterreno[1])]
 
-    caprate      = st.slider('Cap rate',datalotesmap['caprate'].min()-0.005, datalotesmap['caprate'].max()+0.005, (datalotesmap['caprate'].min()-0.005, datalotesmap['caprate'].max()+0.005))
+    st.write(datalotesmap['caprate'].min())
+    st.write(datalotesmap['caprate'].max())
+    caprate      = st.slider('Cap rate',datalotesmap['caprate'].min(), datalotesmap['caprate'].max(), (datalotesmap['caprate'].min(), datalotesmap['caprate'].max()))
     datalotesmap = datalotesmap[(datalotesmap['caprate']>=caprate[0]) & (datalotesmap['caprate']<=caprate[1])]
 
     lotesxbarrio = st.slider('Lotes por barrio',int(datalotesmap['lotesxbarrio'].min()),int(datalotesmap['lotesxbarrio'].max()), (int(datalotesmap['lotesxbarrio'].min()),int(datalotesmap['lotesxbarrio'].max())))

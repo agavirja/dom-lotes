@@ -107,17 +107,15 @@ with col1:
     areaterreno  = st.slider('Area de terreno',300, 400, (300, 400))
     datalotesmap = datalotesmap[(datalotesmap['areaterreno']>=areaterreno[0]) & (datalotesmap['areaterreno']<=areaterreno[1])]
 
-    st.write(datalotesmap['caprate'].min())
-    st.write(datalotesmap['caprate'].max())
     caprate      = st.slider('Cap rate',round(datalotesmap['caprate'].min()*100)/100, round(datalotesmap['caprate'].max()*100)/100, (round(datalotesmap['caprate'].min()*100)/100, round(datalotesmap['caprate'].max()*100)/100))
     datalotesmap = datalotesmap[(datalotesmap['caprate']>=caprate[0]) & (datalotesmap['caprate']<=caprate[1])]
 
     lotesxbarrio = st.slider('Lotes por barrio',int(datalotesmap['lotesxbarrio'].min()),int(datalotesmap['lotesxbarrio'].max()), (int(datalotesmap['lotesxbarrio'].min()),int(datalotesmap['lotesxbarrio'].max())))
     datalotesmap = datalotesmap[(datalotesmap['lotesxbarrio']>=lotesxbarrio[0]) & (datalotesmap['lotesxbarrio']<=lotesxbarrio[1])]
 
-    tipologiam50mt2 = st.slider('Proporcion de vivienda menor a 50 mt2 en el barrio',datalotesmap['50 o menos mt2'].min(),datalotesmap['50 o menos mt2'].max(), (datalotesmap['50 o menos mt2'].min(),datalotesmap['50 o menos mt2'].max()))
+    tipologiam50mt2 = st.slider('Proporcion de vivienda menor a 50 mt2 en el barrio',round(datalotesmap['50 o menos mt2'].min()*100)/100,round(datalotesmap['50 o menos mt2'].max()*100)/100, (round(datalotesmap['50 o menos mt2'].min()*100)/100,round(datalotesmap['50 o menos mt2'].max()*100)/100))
     datalotesmap    = datalotesmap[(datalotesmap['50 o menos mt2']>=tipologiam50mt2[0]) & (datalotesmap['50 o menos mt2']<=tipologiam50mt2[1])]
-
+    
     #tratamiento  = st.selectbox('Tratamiento urbano',options=['Todos','Consolidacion',''])
     tratamiento = st.selectbox('Tratamiento urbano',options=['Todos']+list(datalotesmap['nombre_trat_urba'].unique()))
     if tratamiento!='Todos':

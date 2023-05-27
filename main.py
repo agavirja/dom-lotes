@@ -36,11 +36,11 @@ def getdatalotes():
     datalotes       = datalotes.sort_values(by='indicador',ascending=False)
     datalotes['id'] = range(len(datalotes))
     
-    datageometry     = gpd.read_file('data/app_lotesgeometry.shp')
+    datageometry     = gpd.read_file('data/app_lotesgeometry.shp',crs = 'EPSG:4326')
     datageometry.crs = 'EPSG:4326'
     datageometry     = datageometry.to_crs('EPSG:4326')
 
-    barriocatastral     = gpd.read_file('data/barriocatastralfiltrado.shp',encoding = 'utf-8')
+    barriocatastral     = gpd.read_file('data/barriocatastralfiltrado.shp',crs = 'EPSG:4326')
     barriocatastral.crs = 'EPSG:4326'
     barriocatastral     = barriocatastral.to_crs('EPSG:4326')
     return datageometry,datalotes,barriocatastral

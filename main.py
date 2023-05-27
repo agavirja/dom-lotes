@@ -109,7 +109,7 @@ with col1:
 
     st.write(datalotesmap['caprate'].min())
     st.write(datalotesmap['caprate'].max())
-    caprate      = st.slider('Cap rate',datalotesmap['caprate'].min(), datalotesmap['caprate'].max(), (datalotesmap['caprate'].min(), datalotesmap['caprate'].max()))
+    caprate      = st.slider('Cap rate',round(datalotesmap['caprate'].min()*100)/100, round(datalotesmap['caprate'].max()*100)/100, (round(datalotesmap['caprate'].min()*100)/100, round(datalotesmap['caprate'].max()*100)/100))
     datalotesmap = datalotesmap[(datalotesmap['caprate']>=caprate[0]) & (datalotesmap['caprate']<=caprate[1])]
 
     lotesxbarrio = st.slider('Lotes por barrio',int(datalotesmap['lotesxbarrio'].min()),int(datalotesmap['lotesxbarrio'].max()), (int(datalotesmap['lotesxbarrio'].min()),int(datalotesmap['lotesxbarrio'].max())))

@@ -10,7 +10,6 @@ import plotly.express as px
 import copy
 import pandas as pd
 import geopandas as gpd
-import fiona
 from shapely.geometry import Point
 from bs4 import BeautifulSoup
 

@@ -5,6 +5,8 @@ from folium.plugins import Draw
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 import plotly.graph_objects as go
 import plotly.express as px
+import matplotlib.pyplot as plt
+import matplotlib.colors
 
 import branca
 import pandas as pd
@@ -70,9 +72,14 @@ def getpolygon():
     datalotes       = pd.read_pickle('data/app_datalotes')
     datalotes       = datalotes.sort_values(by='indicador',ascending=False)
     datalotes['id'] = range(len(datalotes))
-    
+
+    cmap               = plt.cm.YlGn
+    datalotes['color'] = pd.qcut(datalotes['indicador'], 5, labels=[cmap(i/5) for i in range(5)])
+    datalotes['color'] = datalotes['color'].apply(lambda color: matplotlib.colors.rgb2hex(color))
+
     data         = pd.read_sql_query("""SELECT code,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_lotes_piloto1"""  , engine)
-    variables    = ['code']
+    data         = data.merge(datalotes[['code','color']],on='code',how='left',validate='1:1')
+    variables    = ['code','color']
     datageometry = data2geojson(data,variables)
     
     consulta        = '"'+'","'.join(datalotes['scacodigo'].unique())+'"'
@@ -134,32 +141,14 @@ with col1:
     st.markdown(html_struct, unsafe_allow_html=True)
     
 with col2:
-    colormap = branca.colormap.linear.GnBu_09.scale(
-        datalotesmap['indicador'].min(),
-        datalotesmap['indicador'].max()
-    )
-    
-    def style_function(feature):
-        data = datalotesmap[datalotesmap['code'] == feature['properties']['code']]
-        if data.empty: # si no tenemos datos para este código, devolvemos un estilo por defecto
-            return {
-                'fillColor': '#999999',
-                'color': '#999999',
-                'weight': 0.5,
-                'fillOpacity': 0.3
-            }
-        else: # si tenemos datos, utilizamos el valor para determinar el color
-            return {
-                'fillColor': colormap(data['indicador'].values[0]),
-                'color': 'black',
-                'weight': 0.5,
-                'fillOpacity': 0.7
-            }
-
 
     map0  = folium.Map(location=[lat,lng], zoom_start=13,tiles="CartoDB dark_matter")
     
-    folium.GeoJson(datageometry, style_function=style_function).add_to(map0)
+    style_function = lambda x: {
+      'color' : x['properties']['color'],
+      'opacity' : 0.50
+    }
+    folium.GeoJson(datageometry,style_function=style_function).add_to(map0)
     folium.GeoJson(barriocatastral).add_to(map0)
     
     draw = Draw(

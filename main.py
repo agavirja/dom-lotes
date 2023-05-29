@@ -150,6 +150,8 @@ with col2:
         
 df = datalotes[['id','areaterreno','areaconstruida','predios','vetustex_max','alturamin','alturamax','nombre_trat_urba','valorAutoavaluo']]
 df.columns = ['id','Area Terreno','Area Construida','# de predios','Antiguedad construccion','Altura minima','Altura maxima','Tratamiento','Avaluo Catastral']
+st.dataframe(df)
+
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_default_column(enablePivot=True, enableValue=True, enableRowGroup=True)
 gb.configure_selection(selection_mode="single", use_checkbox=True) # "multiple"
@@ -166,7 +168,7 @@ response = AgGrid(
     fit_columns_on_grid_load=True,
     header_checkbox_selection_filtered_only=False,
     use_checkbox=True)
-
+        
 if response['selected_rows']:
     datalotestudio = datalotes[datalotes['id']==response['selected_rows'][0]['id']]
     

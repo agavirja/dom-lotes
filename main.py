@@ -148,17 +148,8 @@ with col2:
         latpoint = st_map['all_drawings'][0]['geometry']['coordinates'][1]
         lngpoint = st_map['all_drawings'][0]['geometry']['coordinates'][0]
         
-df = datalotes[['id','areaterreno']]
-#df = datalotes[['id','areaterreno','areaconstruida','predios','vetustex_max','alturamin','alturamax','nombre_trat_urba','valorAutoavaluo']]
-#df.columns = ['id','Area Terreno','Area Construida','# de predios','Antiguedad construccion','Altura minima','Altura maxima','Tratamiento','Avaluo Catastral']
-st.dataframe(df)
-try:
-    response = AgGrid(df)
-    st.write('aggrid')
-except: 
-    gb = GridOptionsBuilder.from_dataframe(df)
-    st.dataframe(gb)
-    st.write('gb')
+df = datalotes[['id','areaterreno','areaconstruida','predios','vetustex_max','alturamin','alturamax','nombre_trat_urba','valorAutoavaluo']]
+df.columns = ['id','Area Terreno','Area Construida','# de predios','Antiguedad construccion','Altura minima','Altura maxima','Tratamiento','Avaluo Catastral']
 
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_default_column(enablePivot=True, enableValue=True, enableRowGroup=True)

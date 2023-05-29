@@ -152,6 +152,7 @@ df = datalotes[['id','areaterreno']]
 #df = datalotes[['id','areaterreno','areaconstruida','predios','vetustex_max','alturamin','alturamax','nombre_trat_urba','valorAutoavaluo']]
 #df.columns = ['id','Area Terreno','Area Construida','# de predios','Antiguedad construccion','Altura minima','Altura maxima','Tratamiento','Avaluo Catastral']
 st.dataframe(df)
+response = AgGrid(df)
 
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_default_column(enablePivot=True, enableValue=True, enableRowGroup=True)

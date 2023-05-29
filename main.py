@@ -74,7 +74,8 @@ def getpolygon():
     datalotes['id'] = range(len(datalotes))
 
     cmap               = plt.cm.YlGn
-    datalotes['color'] = pd.qcut(datalotes['indicador'], 5, labels=[cmap(i/5) for i in range(5)])
+    try:    datalotes['color'] = pd.qcut(datalotes['indicador'], 5, labels=[cmap(i/5) for i in range(5)])
+    except: datalotes['color'] =  pd.cut(datalotes['indicador'], 5, labels=[cmap(i/5) for i in range(5)])
     datalotes['color'] = datalotes['color'].apply(lambda color: matplotlib.colors.rgb2hex(color))
 
     data         = pd.read_sql_query("""SELECT code,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_lotes_piloto1"""  , engine)
@@ -82,9 +83,16 @@ def getpolygon():
     variables    = ['code','color']
     datageometry = data2geojson(data,variables)
     
+    cmap       = plt.cm.YlGn
+    v          = datalotes.groupby('scacodigo')['lotesxbarrio'].median().reset_index()
+    try:    v['color'] = pd.qcut(v['lotesxbarrio'], 5, labels=[cmap(i/5) for i in range(5)])
+    except: v['color'] =  pd.cut(v['lotesxbarrio'], 5, labels=[cmap(i/5) for i in range(5)])
+    v['color'] = v['color'].apply(lambda color: matplotlib.colors.rgb2hex(color))
+    
     consulta        = '"'+'","'.join(datalotes['scacodigo'].unique())+'"'
     data            = pd.read_sql_query(f"""SELECT scacodigo,scanombre,ST_AsText(geometry) as geometry FROM lotes.dom_geometry_barrios_piloto1 WHERE scacodigo IN ({consulta})"""  , engine)
-    variables       = ['scacodigo', 'scanombre']
+    data            = data.merge(v[['scacodigo','color']],on='scacodigo',how='left',validate='1:1')
+    variables       = ['scacodigo', 'scanombre','color']
     barriocatastral = data2geojson(data,variables)
     
     return datageometry,datalotes,barriocatastral
@@ -146,7 +154,7 @@ with col2:
     
     style_function = lambda x: {
       'color' : x['properties']['color'],
-      'opacity' : 0.50
+      'opacity' : 0.50,
     }
     folium.GeoJson(datageometry,style_function=style_function).add_to(map0)
     folium.GeoJson(barriocatastral).add_to(map0)

@@ -160,8 +160,13 @@ with col2:
       'color' : x['properties']['color'],
       'opacity' : 0.20,
     }
+    highlight_function = lambda x: {'fillColor': '#000000', 
+                                'color':'#000000', 
+                                'fillOpacity': 0.50, 
+                                'weight': 0.1}
+    
     folium.GeoJson(datageometry,style_function=style_function_lotes).add_to(map0)
-    folium.GeoJson(barriocatastral,style_function=style_function_barrios).add_to(map0)
+    folium.GeoJson(barriocatastral,style_function=style_function_barrios,highlight_function=highlight_function).add_to(map0)
     
     draw = Draw(
                 draw_options={"polygon":False,"polyline": False,"marker": True,"circlemarker":False,"rectangle":False,"circle":False},

@@ -6,6 +6,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 import plotly.graph_objects as go
 import plotly.express as px
 
+import branca
 import pandas as pd
 from shapely.geometry import Point
 from bs4 import BeautifulSoup
@@ -26,6 +27,7 @@ password = st.secrets["password"]
 host     = st.secrets["host"]
 schema   = st.secrets["schema"]
 engine   = create_engine(f'mysql+mysqlconnector://{user}:{password}@{host}/{schema}')
+
 
 def getinput(x,pos,typeinput):
     try:
@@ -90,6 +92,7 @@ def getinfolote(barmanpre):
         datapropietarios = datapropietarios[datapropietarios['chip'].isin(datachips['prechip'])]
     return datachips,datapropietarios
 
+    
 datageometry,datalotes,barriocatastral = getpolygon()
 
 datalotesmap   = datalotes.copy()
@@ -131,9 +134,32 @@ with col1:
     st.markdown(html_struct, unsafe_allow_html=True)
     
 with col2:
+    colormap = branca.colormap.linear.GnBu_09.scale(
+        datalotesmap['indicador'].min(),
+        datalotesmap['indicador'].max()
+    )
+    
+    def style_function(feature):
+        data = datalotesmap[datalotesmap['code'] == feature['properties']['code']]
+        if data.empty: # si no tenemos datos para este código, devolvemos un estilo por defecto
+            return {
+                'fillColor': '#999999',
+                'color': '#999999',
+                'weight': 0.5,
+                'fillOpacity': 0.3
+            }
+        else: # si tenemos datos, utilizamos el valor para determinar el color
+            return {
+                'fillColor': colormap(data['indicador'].values[0]),
+                'color': 'black',
+                'weight': 0.5,
+                'fillOpacity': 0.7
+            }
+
+
     map0  = folium.Map(location=[lat,lng], zoom_start=13,tiles="CartoDB dark_matter")
     
-    folium.GeoJson(datageometry).add_to(map0)
+    folium.GeoJson(datageometry, style_function=style_function).add_to(map0)
     folium.GeoJson(barriocatastral).add_to(map0)
     
     draw = Draw(

@@ -152,12 +152,16 @@ with col2:
 
     map0  = folium.Map(location=[lat,lng], zoom_start=13,tiles="CartoDB dark_matter")
     
-    style_function = lambda x: {
+    style_function_lotes = lambda x: {
       'color' : x['properties']['color'],
       'opacity' : 0.50,
     }
-    folium.GeoJson(datageometry,style_function=style_function).add_to(map0)
-    folium.GeoJson(barriocatastral).add_to(map0)
+    style_function_barrios = lambda x: {
+      'color' : x['properties']['color'],
+      'opacity' : 0.20,
+    }
+    folium.GeoJson(datageometry,style_function=style_function_lotes).add_to(map0)
+    folium.GeoJson(barriocatastral,style_function=style_function_barrios).add_to(map0)
     
     draw = Draw(
                 draw_options={"polygon":False,"polyline": False,"marker": True,"circlemarker":False,"rectangle":False,"circle":False},

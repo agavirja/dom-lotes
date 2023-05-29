@@ -148,7 +148,8 @@ with col2:
         latpoint = st_map['all_drawings'][0]['geometry']['coordinates'][1]
         lngpoint = st_map['all_drawings'][0]['geometry']['coordinates'][0]
         
-df = datalotes[['id','areaterreno','areaconstruida','predios','vetustex_max','alturamin','alturamax','nombre_trat_urba','valorAutoavaluo']]
+df = datalotes[['id','areaterreno']]
+#df = datalotes[['id','areaterreno','areaconstruida','predios','vetustex_max','alturamin','alturamax','nombre_trat_urba','valorAutoavaluo']]
 #df.columns = ['id','Area Terreno','Area Construida','# de predios','Antiguedad construccion','Altura minima','Altura maxima','Tratamiento','Avaluo Catastral']
 st.dataframe(df)
 
